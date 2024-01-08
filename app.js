@@ -1,11 +1,11 @@
 // Start coding here
 import express from "express";
 import { assignments } from "./data/assignments.js";
-
+import { comments } from "./data/comments.js";
 const app = express();
 const port = 4000;
 let assignmentsData = assignments;
-
+let commentsData = comments;
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -25,8 +25,7 @@ app.get("/assignments", (req, res) => {
 });
 
 // get an assignments with id
-app.get("/:assignments/:sId", (req, res) => {
-  console.log(req.params);
+app.get("/:assignments/:assignmentsId", (req, res) => {
   let assignmentsIdFromClient = Number(req.params.assignmentsId);
   let assignmentsById = assignmentsData.filter((assignment) => {
     return assignment.id === assignmentsIdFromClient;
@@ -48,7 +47,7 @@ app.post("/assignments", (req, res) => {
   }
 
   const newAssignment = {
-    id: assignmentsData[assignmentsData.length - 1].id + 1,
+    id: assignmentsData[assignmentsData.length - 1]?.id + 1 || 1,
     title: req.body.title,
     categories: req.body.categories,
     description: req.body.description,
@@ -90,8 +89,8 @@ app.put("/assignments/:assignmentId", (req, res) => {
 });
 
 // delete an assignment
-app.delete("/assignments/:assignmentId", (req, res) => {
-  let assignmentsIdFromClient = Number(req.params.assignmentId);
+app.delete("/assignments/:assignmentsId", (req, res) => {
+  let assignmentsIdFromClient = Number(req.params.assignmentsId);
   const assignmentIndex = assignmentsData.findIndex(
     (assignment) => assignment.id === assignmentsIdFromClient
   );
@@ -112,7 +111,62 @@ app.delete("/assignments/:assignmentId", (req, res) => {
   });
 });
 
+// delete all
+app.delete("/assignments/delete/all", (req, res) => {
+  let newAssignmentsData = [];
+  assignmentsData = newAssignmentsData;
+
+  return res.json({
+    message: `Deleted successfully`,
+  });
+});
+
+// OPTIONAL
+app.get("/assignments/:assignmentsId/comments", (req, res) => {
+  let assignmentsIdFromClient = Number(req.params.assignmentsId);
+  let commentInAssignmentsId = commentsData.filter((comment) => {
+    return comment.assignmentId === assignmentsIdFromClient;
+  });
+
+  if (commentInAssignmentsId.length === 0) {
+    return res.json({
+      message: `Not found data in id ${assignmentsIdFromClient}`,
+    });
+  } else {
+    return res.json({
+      message: "Complete fetching comments",
+      data: commentInAssignmentsId,
+    });
+  }
+});
+
+// Create comment in assignment
+app.post("/assignments/:assignmentsId/comments", (req, res) => {
+  let assignmentsIdFromClient = Number(req.params.assignmentsId);
+  const index = assignmentsData.findIndex((assignment) => {
+    return assignment.id === assignmentsIdFromClient;
+  });
+
+  if (index === -1) {
+    return res.json({
+      message: `Please add an assignment id ${assignmentsIdFromClient}`,
+    });
+  }
+
+  let newComment = {
+    id: commentsData[commentsData.length - 1]?.id + 1 || 1,
+    assignmentId: assignmentsIdFromClient,
+    content: req.body.content,
+  };
+
+  commentsData = [...commentsData, newComment];
+  return res.json({
+    message: "New comment has been created successfully",
+    data: newComment,
+  });
+});
+
 // listen to the port
 app.listen(port, () => {
-  console.log(`Server is running at ${port}`);
+  console.log(`Server is running at port ${port}`);
 });
