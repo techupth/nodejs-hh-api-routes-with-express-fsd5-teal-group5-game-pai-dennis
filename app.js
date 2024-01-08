@@ -85,7 +85,6 @@ app.put("/assignments/:assignmentsId", (req, res) => {
   });
 });
 
-
 //get comment by assignmentID
 app.get("/assignments/:assignmentsId/comments", (req, res) => {
   const inputAssignmentId = Number(req.params.assignmentsId);
@@ -100,20 +99,20 @@ app.get("/assignments/:assignmentsId/comments", (req, res) => {
   });
 });
 
-
-
+//add comment by assignmentID
 app.post("/assignments/:assignmentsId/comments", (req, res) => {
-    const inputAssignmentId = Number(req.params.assignmentsId);
-  
-    const currentId = commentsDatabase[commentsDatabase.length-1].id;
+  const inputAssignmentId = Number(req.params.assignmentsId);
 
-    commentsDatabase.push({
-        id : currentId+1,
-        ...req.body,
-    })
-  
-    return res.json({
-        message: "New comment has been created successfully",
-        data: commentsDatabase[commentsDatabase.length-1],
-    });
+  const currentId = commentsDatabase[commentsDatabase.length - 1].id;
+
+  commentsDatabase.push({
+    id: currentId + 1,
+    assignmentId : inputAssignmentId,
+    ...req.body,
   });
+
+  return res.json({
+    message: "New comment has been created successfully",
+    data: commentsDatabase[commentsDatabase.length - 1],
+  });
+});
